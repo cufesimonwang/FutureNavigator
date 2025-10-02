@@ -1,104 +1,59 @@
 # FutureNavigator — dev_simon
 
-## 1. Project Overview
+FutureNavigator is a Retrieval-Augmented Generation (RAG) chatbot that helps high school and undergraduate applicants (and their counselors or parents) plan, track, and optimize their university applications. In this phase we are scaffolding the product foundations before building the RAG experience.
 
-**FutureNavigator** is a Retrieval-Augmented Generation (RAG) chatbot that guides students through the university application process.  
-It provides **accurate, personalized, and cited** information about programs, deadlines, scholarships, and requirements, while helping students plan their application journey.
+## Value Proposition
+- Centralize scattered admissions intelligence into a single assistant.
+- Provide provenance-backed answers to reduce misinformation and guesswork.
+- Generate personalized timelines, checklists, and reminders so nobody misses a deadline.
+- Support counselors and parents with read-only visibility into student progress.
 
-## 2. Value Proposition
+## Eight-Week Roadmap
+| Week | Milestone | Highlights |
+| ---- | --------- | ---------- |
+| 1 | Repo & infrastructure setup | Branching strategy, Dockerized services, health checks |
+| 2 | Data ingestion v0 | Document parsing, metadata capture |
+| 3 | Retrieval v0 | Vector + keyword search baseline |
+| 4 | RAG answer v0 | Prompt templates, citation enforcement |
+| 5 | Personalization v0 | Profiles, checklist exports |
+| 6 | Program browser | Program catalog & filters |
+| 7 | Safety & feedback | Guardrails, reranker, feedback loop |
+| 8 | Beta launch prep | Documentation, evaluation report, pilot testing |
 
-- Centralizes scattered information into one assistant.
-- Provides provenance-backed answers to reduce misinformation.
-- Generates personalized checklists and timelines based on user profile.
-- Helps students avoid missing deadlines and incomplete documents.
-
-## 3. System Architecture
-
-```
-flowchart LR
-U[User (Web/Chat)] --> GW[API Gateway]
-GW --> AUTH[Auth & Profiles]
-GW --> ORCH[Agent Orchestrator]
-ORCH -->|Query| RETRIEVE[Retrieval Layer]
-RETRIEVE -->|Vector| VDB[(Vector DB)]
-RETRIEVE -->|Structured| KG[(Program DB / Tables)]
-RETRIEVE -->|Unstructured| DOCS[(Curated PDFs, Web Snapshots)]
-ORCH --> LLM[LLM (RAG w/ Re-Ranker)]
-LLM --> CITE[Citation Builder]
-ORCH --> TASKS[Planner & Checklist Engine]
-AUTH --> STORE[(Postgres)]
-TASKS --> STORE
-VDB --> INGEST[Ingestion Pipeline]
-DOCS --> INGEST
-KG --> INGEST
-```
-
-## 4. RAG Pipeline
-
-- **Ingestion**: PDF → chunking → metadata → deduplication → PII scrubbing.
-- **Indexing**: Dense embeddings + BM25 hybrid retrieval.
-- **Query Understanding**: Intent classification + entity extraction.
-- **Retrieval**: Hybrid dense/sparse search + reranker.
-- **Answer Generation**: Citation-based LLM responses.
-- **Feedback**: User ratings → retriever tuning.
-
-## 5. Features
-
-- Program search with filters (degree, country, tuition).
-- Q&A for requirements & deadlines with citations.
-- Personalized checklist generator (CSV/PDF/ICS export).
-- Scholarship finder and matcher.
-- Draft helpers (emails, SOP outlines).
-
-## 6. Tech Stack
-
+## System Snapshot
 - **Frontend**: Next.js + Tailwind
-- **Backend**: Node.js (Fastify/Express)
-- **DB**: Postgres
-- **Vector DB**: pgvector / Pinecone / Qdrant
-- **LLM**: OpenAI-compatible API + reranker
-- **Infra**: Vercel + Railway
+- **Backend**: Node.js (Express, TypeScript)
+- **Database**: Postgres + pgvector
+- **LLM Stack**: OpenAI-compatible API (future phase)
+- **Infra**: Docker Compose for local dev, cloud TBD
 
-## 7. Data Model
+## Current Phase
+We are focused on scaffolding the repository (frontend, backend, database, infrastructure) with stubbed RAG endpoints that will be implemented in a subsequent phase.
 
-- `user(id, profile)`
-- `school(id, name, country)`
-- `program(id, school_id, degree, deadlines_json)`
-- `doc(id, source_url, fetched_at, text_meta_json)`
-- `embedding(id, doc_id, chunk_id, vector)`
-- `plan(id, user_id, checklist_json)`
+## Local Development
+1. Duplicate `.env.example` to `.env` and adjust values as needed (defaults work for local Compose).
+2. Build and launch the stack:
+   ```bash
+   make up
+   ```
+3. Access the services:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:4000/api/healthz
+   - Postgres: localhost:5432 (credentials from `.env`)
+   - Adminer: http://localhost:8080 (System: PostgreSQL, Server: `postgres`, Username: `postgres`, Password: `postgres`, Database: `futurenavigator`)
 
-## 8. API Sketch
+Additional helpers:
 
-- `POST /api/qa` → {query} → {answer, citations}
-- `GET /api/programs` → filters → {results}
-- `POST /api/plan` → create/update user plan
+```bash
+make logs   # Follow container logs
+make down   # Stop and remove containers
+make psql   # Open a psql shell inside the Postgres container
+```
 
-## 9. Security & Privacy
+## Next Steps
+- Implement Retrieval-Augmented Generation ingestion and QA flows.
+- Harden auth, user management, and role-based access for applicants, counselors, and parents.
+- Enrich program catalog and checklist intelligence with live data sources.
 
-- Minimal PII storage.
-- Strip PII from indexed documents.
-- Prompt-injection and jailbreak guardrails.
-
-## 10. Evaluation Metrics
-
-- **IR**: nDCG@k, Recall, MRR.
-- **Answer Quality**: Human-rated helpfulness & citation accuracy.
-- **Performance**: Latency (p95) + hallucination rate.
-
-## 11. Eight-Week Roadmap
-
-| Week | Milestone          | Deliverables                            | Acceptance Criteria     |
-| ---- | ------------------ | --------------------------------------- | ----------------------- |
-| 1    | Repo & Infra Setup | CI/CD, `.env.example`, health check API | CI green, lint pass     |
-| 2    | Ingestion v0       | PDF → text + metadata                   | Ingest 50 docs          |
-| 3    | Retrieval v0       | Embeddings + BM25 hybrid                | Top-k relevant chunks   |
-| 4    | RAG Answer v0      | Prompt templates + citations            | Answers w/ ≥2 citations |
-| 5    | Personalization v0 | User profiles + checklist export        | Timeline per user       |
-| 6    | Program Browser    | `/programs` endpoint + filters          | Query <2s latency       |
-| 7    | Safety & Feedback  | Reranker + guardrails + feedback loop   | nDCG +15%               |
-| 8    | Beta Launch        | Docs, demo, evaluation report           | Beta test w/ 5 users    |
-
-## 12. License
-
-MIT License. Maintainer: Simon.
+## Maintainer
+Simon
