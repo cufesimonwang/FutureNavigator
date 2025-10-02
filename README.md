@@ -14,7 +14,7 @@ It provides **accurate, personalized, and cited** information about programs, de
 
 ## 3. System Architecture
 
-```mermaid
+```
 flowchart LR
 U[User (Web/Chat)] --> GW[API Gateway]
 GW --> AUTH[Auth & Profiles]
